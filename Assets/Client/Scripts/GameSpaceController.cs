@@ -11,16 +11,16 @@ namespace com.AndryKram.SpaceExplorer
         [Header("View Settings")]
 
         [Tooltip("Установить объект камеры или игрока")]
-        [SerializeField] private Transform _objectCenterViewPosition; //точка центра отображения игрового пространства (Камеру поставить)
+        [SerializeField] private Transform _objectCenterViewPosition = null; //точка центра отображения игрового пространства (Камеру поставить)
         [Tooltip("Растояние от объекта до края куба области отображения объектов")]
-        [SerializeField] private int _radiusCubeViewSpace; //радиус окружности от центра отображения игрового пространства
+        [SerializeField] private int _radiusCubeViewSpace = 5; //радиус окружности от центра отображения игрового пространства
 
         [Header("Grid Settings")]
 
         [Tooltip("Родитель всех созданых объектов")]
-        [SerializeField] private Transform _gameSpaceParent;//объект родителя для всех созданных объектов
-        [SerializeField] private GameObject _planetPrefab;//префаб объекта планет
-        [SerializeField] private Vector2 _cellSize;//Размер ячеек игрового поля
+        [SerializeField] private Transform _gameSpaceParent = null;//объект родителя для всех созданных объектов
+        [SerializeField] private GameObject _planetPrefab = null;//префаб объекта планет
+        [SerializeField] private Vector2 _cellSize = Vector2.one;//Размер ячеек игрового поля
         [SerializeField, Range(0, 100)] private int _chanceSpawnPlanet = 30;//шанс создания в ячейке объекта
 
         private int _seedGameSpace;//семя игрового поля
@@ -28,7 +28,7 @@ namespace com.AndryKram.SpaceExplorer
         private Dictionary<Vector2Int, GameObject> _planets = new Dictionary<Vector2Int, GameObject>(); //текущие отображенные планеты
         private Stack<GameObject> _poolPlanets = new Stack<GameObject>();//пул планет
 
-        private Vector2Int _lastCenterView;//последняя позиция объекта-центра области отображения
+        private Vector2Int _lastCenterView = Vector2Int.zero;//последняя позиция объекта-центра области отображения
         #endregion
 
         #region Public Methods

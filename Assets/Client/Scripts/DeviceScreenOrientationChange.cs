@@ -13,8 +13,8 @@ namespace com.AndryKram.SpaceExplorer
         private static ActionEvent<Vector2> _onResolutionChange = new ActionEvent<Vector2>();    //Событие смены разрещения устройства
         private static ActionEvent<DeviceOrientation> _onOrientationChange = new ActionEvent<DeviceOrientation>();     //Событие смены ориентации устройства
 
-        private static Vector2 _currentResolution;  //Тукущее разрешение устройства
-        private static DeviceOrientation _currentOrientation;//Тукущая ориентация устройства
+        private static Vector2 _currentResolution = Vector2.zero;  //Тукущее разрешение устройства
+        private static DeviceOrientation _currentOrientation = DeviceOrientation.Unknown;//Тукущая ориентация устройства
 
         private const float _checkDelay = 0.5f; //задержка между проверками
         private bool _isChecking = true;    //метка активации корутины

@@ -11,21 +11,21 @@ namespace com.AndryKram.SpaceExplorer
     public class CameraScaler : MonoBehaviour
     {
         #region Fields
-        [SerializeField] private Camera _mainCamera;        //основная камера
-        [SerializeField] private float _minSizeCameraScale; //миниальный размер камеры
-        [SerializeField] private float _maxSizeCameraScale; //максимальный размер камеры
-        [SerializeField] private float _speedCameraScale;   //скорость изменения размера камеры
+        [SerializeField] private Camera _mainCamera = null;        //основная камера
+        [SerializeField] private float _minSizeCameraScale = 4.5f; //миниальный размер камеры
+        [SerializeField] private float _maxSizeCameraScale = 90f; //максимальный размер камеры
+        [SerializeField] private float _speedCameraScale = 0.05f;   //скорость изменения размера камеры
 
         private float _orientationScaleChanger = 1.8f;//значение для изменения масштаба камеры при повороте (16/9 = 1.8)
         private bool _isLandscapeOrientation = false;//метка изменения ориентациии камеры
 
-        private SpaceExplorerInputs _inputActions;//класс InputActions
+        private SpaceExplorerInputs _inputActions = null;//класс InputActions
 
-        private Vector2 _lastPositionTouchOne;//последняя позиция на экране первого касания
-        private Vector2 _lastPositionTouchTwo;//последняя позиция на экране второго касания
-        private float _lastDistanceTouch;//последнее растояние между касаниями
+        private Vector2 _lastPositionTouchOne = Vector2.zero;//последняя позиция на экране первого касания
+        private Vector2 _lastPositionTouchTwo = Vector2.zero;//последняя позиция на экране второго касания
+        private float _lastDistanceTouch = 0;//последнее растояние между касаниями
 
-        private bool _isTouchOne;//метка первого нажатия
+        private bool _isTouchOne = false;//метка первого нажатия
         #endregion
 
         #region Private Methods

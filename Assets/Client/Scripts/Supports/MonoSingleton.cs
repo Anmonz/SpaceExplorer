@@ -8,7 +8,7 @@ namespace com.AndryKram.SpaceExplorer
 	{
 
 		#region Fields
-		private static T instance;
+		private static T instance = null;
 
 		#endregion
 
