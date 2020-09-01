@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace com.AndryKram.SpaceExplorer
 {
-    public class GameSpaceController : MonoBehaviour
+    public class GameSpaceController : MonoSingleton<GameSpaceController>
     {
         #region Fields
         [Header("View Settings")]
