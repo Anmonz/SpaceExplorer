@@ -18,6 +18,8 @@ namespace com.AndryKram.SpaceExplorer
 
         private bool _isMove = false;//метка текущего активного перемещения
         private Vector2Int _playerPositionCell = Vector2Int.zero;//текущая клетка расположения игрока
+
+        private ActionEvent _onMovePlayerEvent = new ActionEvent();
         #endregion
 
         #region Properties
@@ -26,7 +28,7 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         public Vector2Int PlayerCellPosition { get => _playerPositionCell; }
 
-        public ActionEvent OnMovePlayer { get; private set; }
+        public ActionEvent OnMovePlayer { get => _onMovePlayerEvent; }
         #endregion
 
         #region Public Methods
@@ -88,7 +90,7 @@ namespace com.AndryKram.SpaceExplorer
         private void MovePlayerTo(Vector2 direction)
         {
             //проверка текущего движения
-            if (!_isMove)
+            if (!_isMove && !CameraScaler.Instance.IsScalingCamera)
             {
                 _isMove = true;
 
@@ -111,6 +113,7 @@ namespace com.AndryKram.SpaceExplorer
                 StartCoroutine(MoveCoroutine(GameSpaceController.Instance.GetCenterCell(_playerPositionCell), _timeMove));
             }
         }
+
         #endregion
 
         #region Coroutines
