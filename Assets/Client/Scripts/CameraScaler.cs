@@ -28,6 +28,20 @@ namespace com.AndryKram.SpaceExplorer
         private bool _isTouchOne = false;//метка первого нажатия
 
         private bool _isActivated = false;
+
+        private ActionEvent _onScaleCameraEvent = new ActionEvent();
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Событие при масштабировании камеры
+        /// </summary>
+        public ActionEvent OnScaleCameraSize { get => _onScaleCameraEvent; }
+
+        /// <summary>
+        /// Метка изменения размера камеры
+        /// </summary>
+        public bool IsScalingCamera { get; private set; }
         #endregion
 
         #region Public Methods
@@ -50,6 +64,9 @@ namespace com.AndryKram.SpaceExplorer
             //DeviceScreenOrientationChange.Instance.OnOrientationChange.AddListener(OnChangeOrientationScreen);
         }
     
+        /// <summary>
+        /// Отключает взаимодействие пользователя с масштабированием камеры
+        /// </summary>
         public void DeactivateCameraScaler()
         {
             _isActivated = false;
@@ -79,16 +96,16 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         private void OnDestroy()
         {
-            if (_isActivated)
+            if (_isActivated && _inputActions != null)
             {
                 _inputActions.CameraScaler.TouchOne.started -= OnStartedTouch;
                 _inputActions.CameraScaler.TouchOne.canceled -= OnCanceledTouch;
 
                 _inputActions.CameraScaler.TouchTwo.started -= OnStartedTouch;
                 _inputActions.CameraScaler.TouchTwo.canceled -= OnCanceledTouch;
+                //освобождение экземпляра
+                _inputActions.Dispose();
             }
-            //освобождение экземпляра
-            _inputActions.Dispose();
 
             //DeviceScreenOrientationChange.Instance.OnOrientationChange.RemoveListener(OnChangeOrientationScreen);
         }
@@ -186,12 +203,16 @@ namespace com.AndryKram.SpaceExplorer
         /// <returns></returns>
         private IEnumerator ScaleSize()
         {
-            while(_isTouchOne)
+            IsScalingCamera = true;
+            CameraFolowTarget.Instance.GoToTarget();
+            while (_isTouchOne)
             {
                 //вычисление текущих позиций касаний
                 var currentTouchOne = _inputActions.CameraScaler.TouchOnePosition.ReadValue<Vector2>();
                 var currentTouchTwo = _inputActions.CameraScaler.TouchTwoPosition.ReadValue<Vector2>();
                 var currentDistanceTouch = Vector2.Distance(currentTouchOne, currentTouchTwo);
+                
+                if((_lastDistanceTouch - currentDistanceTouch) == 0) yield return new WaitForFixedUpdate();
 
                 //вычисление нового значения размера камеры
                 var scale = _mainCamera.orthographicSize + (_lastDistanceTouch - currentDistanceTouch) / 2f * _speedCameraScale;
@@ -202,6 +223,8 @@ namespace com.AndryKram.SpaceExplorer
                 else
                     _mainCamera.orthographicSize = Mathf.Clamp(scale, _minSizeCameraScale / _orientationScaleChanger, _maxSizeCameraScale / _orientationScaleChanger);
 
+                OnScaleCameraSize.Invoke();
+
                 //запоминание текущих позиций касаний
                 _lastPositionTouchOne = currentTouchOne;
                 _lastPositionTouchTwo = currentTouchTwo;
@@ -209,6 +232,7 @@ namespace com.AndryKram.SpaceExplorer
 
                 yield return new WaitForFixedUpdate();
             }
+            IsScalingCamera = false;
         }
         #endregion
     }
