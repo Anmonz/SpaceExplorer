@@ -8,7 +8,7 @@ namespace com.AndryKram.SpaceExplorer
     /// <summary>
     /// Изменяет масштаб камеры
     /// </summary>
-    public class CameraScaler : MonoBehaviour
+    public class CameraScaler : MonoSingleton<CameraScaler>
     {
         #region Fields
         [SerializeField] private Camera _mainCamera = null;        //основная камера
@@ -26,16 +26,18 @@ namespace com.AndryKram.SpaceExplorer
         private float _lastDistanceTouch = 0;//последнее растояние между касаниями
 
         private bool _isTouchOne = false;//метка первого нажатия
+
+        private bool _isActivated = false;
         #endregion
 
-        #region Private Methods
+        #region Public Methods
         /// <summary>
         /// Инициализирует события нажатия на экран
         /// и событие изменения ориентации
         /// </summary>
-        private void Awake()
+        public void ActivateCameraScaler()
         {
-            _inputActions = new SpaceExplorerInputs();
+            _isActivated = true;
 
             _inputActions.CameraScaler.TouchOne.started += OnStartedTouch;
             _inputActions.CameraScaler.TouchOne.canceled += OnCanceledTouch;
@@ -43,14 +45,32 @@ namespace com.AndryKram.SpaceExplorer
             _inputActions.CameraScaler.TouchTwo.started += OnStartedTouch;
             _inputActions.CameraScaler.TouchTwo.canceled += OnCanceledTouch;
 
+            _inputActions.Enable();
+            
             //DeviceScreenOrientationChange.Instance.OnOrientationChange.AddListener(OnChangeOrientationScreen);
         }
+    
+        public void DeactivateCameraScaler()
+        {
+            _isActivated = false;
 
+            _inputActions.Disable();
+
+            _inputActions.CameraScaler.TouchOne.started -= OnStartedTouch;
+            _inputActions.CameraScaler.TouchOne.canceled -= OnCanceledTouch;
+
+            _inputActions.CameraScaler.TouchTwo.started -= OnStartedTouch;
+            _inputActions.CameraScaler.TouchTwo.canceled -= OnCanceledTouch;
+        }
+        #endregion
+
+        #region Private Methods
         /// <summary>
         /// Проверяет текущую ориентацию экрана
         /// </summary>
         private void Start()
         {
+            _inputActions = new SpaceExplorerInputs();
             //OnChangeOrientationScreen(DeviceScreenOrientationChange.Instance.CurrentOrientation);
         }
 
@@ -59,12 +79,14 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         private void OnDestroy()
         {
-            _inputActions.CameraScaler.TouchOne.started -= OnStartedTouch;
-            _inputActions.CameraScaler.TouchOne.canceled -= OnCanceledTouch;
+            if (_isActivated)
+            {
+                _inputActions.CameraScaler.TouchOne.started -= OnStartedTouch;
+                _inputActions.CameraScaler.TouchOne.canceled -= OnCanceledTouch;
 
-            _inputActions.CameraScaler.TouchTwo.started -= OnStartedTouch;
-            _inputActions.CameraScaler.TouchTwo.canceled -= OnCanceledTouch;
-
+                _inputActions.CameraScaler.TouchTwo.started -= OnStartedTouch;
+                _inputActions.CameraScaler.TouchTwo.canceled -= OnCanceledTouch;
+            }
             //освобождение экземпляра
             _inputActions.Dispose();
 
@@ -76,7 +98,7 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         private void OnEnable()
         {
-            _inputActions.Enable();
+            if(_inputActions != null) _inputActions.Enable();
         }
 
         /// <summary>
@@ -84,7 +106,7 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         private void OnDisable()
         {
-            _inputActions.Disable();
+            if (_inputActions != null) _inputActions.Disable();
         }
 
         /// <summary>
