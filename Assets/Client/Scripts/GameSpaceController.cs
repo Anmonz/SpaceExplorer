@@ -29,6 +29,15 @@ namespace com.AndryKram.SpaceExplorer
         private Stack<GameObject> _poolPlanets = new Stack<GameObject>();//пул планет
 
         private Vector2Int _lastCenterView = Vector2Int.zero;//последняя позиция объекта-центра области отображения
+
+        private int _lastRadiusCubeViewSpace = 0;//при скрытии поля сохраняет последний радиус
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Возвращает семя относительно которого создано игровое поле
+        /// </summary>
+        public int GameSpaceSeed { get => _seedGameSpace; }
         #endregion
 
         #region Public Methods
@@ -37,11 +46,23 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         public void InitializeGameSpace(int seed = 0)
         {
+            if (_lastRadiusCubeViewSpace != 0) _radiusCubeViewSpace = _lastRadiusCubeViewSpace;
+
             //Проверка на поступление нового Seed
             if (seed == 0) _seedGameSpace = (int)System.DateTime.Now.GetHashCode();
             else _seedGameSpace = seed;
 
             //Отображение игрового поля
+            CheckAllCellViewGameSpace();
+        }
+
+        /// <summary>
+        /// Скрывает объекты с поля
+        /// </summary>
+        public void HideGameSpace()
+        {
+            _lastRadiusCubeViewSpace = _radiusCubeViewSpace;
+            _radiusCubeViewSpace = 0;
             CheckAllCellViewGameSpace();
         }
 
@@ -59,6 +80,30 @@ namespace com.AndryKram.SpaceExplorer
         public void UpdateDisplacementGameSpace()
         {
             CheckCellDiplacementCenterViewGameSpace();
+        }
+
+        /// <summary>
+        /// Получение ячейки в которую входит позиция
+        /// </summary>
+        /// <param name="position">позиция на проверку</param>
+        /// <returns></returns>
+        public Vector2Int GetCellOnWorld(Vector3 position)
+        {
+            var cellX = (int)System.Math.Floor(position.x / _cellSize.x);
+            var cellY = (int)System.Math.Floor(position.y / _cellSize.y);
+            return new Vector2Int(cellX, cellY);
+        }
+
+        /// <summary>
+        /// Получение центра ячейки в глобальных координатах
+        /// </summary>
+        /// <param name="cell">Ячейка</param>
+        /// <returns></returns>
+        public Vector3 GetCenterCell(Vector2Int cell)
+        {
+            var positionX = cell.x * _cellSize.x + _cellSize.x / 2f;
+            var positionY = cell.y * _cellSize.y + _cellSize.y / 2f;
+            return new Vector3(positionX, positionY, 0f);
         }
         #endregion
 
@@ -247,30 +292,6 @@ namespace com.AndryKram.SpaceExplorer
                 _planets.Remove(cell);
             }
         }
-
-        /// <summary>
-        /// Получение ячейки в которую входит позиция
-        /// </summary>
-        /// <param name="position">позиция на проверку</param>
-        /// <returns></returns>
-        private Vector2Int GetCellOnWorld(Vector3 position)
-        {
-            var cellX = (int)System.Math.Floor(position.x / _cellSize.x);
-            var cellY = (int)System.Math.Floor(position.y / _cellSize.y);
-            return new Vector2Int(cellX, cellY);
-        }
-
-        /// <summary>
-        /// Получение центра ячейки в глобальных координатах
-        /// </summary>
-        /// <param name="cell">Ячейка</param>
-        /// <returns></returns>
-        private Vector3 GetCenterCell(Vector2Int cell)
-        {
-            var positionX = cell.x * _cellSize.x + _cellSize.x / 2f;
-            var positionY = cell.y * _cellSize.y + _cellSize.y / 2f;
-            return new Vector3(positionX, positionY, 0f);
-        }
         #endregion
 
 #if UNITY_EDITOR
@@ -279,7 +300,7 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         private void OnDrawGizmosSelected()
         {
-            Gizmos.DrawWireCube(_objectCenterViewPosition.position, _cellSize * _radiusCubeViewSpace * 2f); 
+            Gizmos.DrawWireCube(_objectCenterViewPosition.position, _cellSize * _radiusCubeViewSpace * 2f);
         }
 #endif
     }
