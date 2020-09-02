@@ -492,10 +492,10 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 20
   field of view: 60
   orthographic: 1
-  orthographic size: 4.5
+  orthographic size: 5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -554,6 +554,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 164082d973c0d3640a4d8dc50bce9aba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _offsetEndScreenPlayerMove: {x: 1, y: 1}
 --- !u!4 &520693152
 Transform:
   m_ObjectHideFlags: 0
@@ -597,10 +598,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c77d7df1f8865f64c8a9b1d08bfaf0a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _objectCenterViewPosition: {fileID: 264003337}
-  _radiusCubeViewSpace: 50
+  _offsetProjection: {x: 3, y: 3}
+  _amountPlanetWithScore: 10
   _gameSpaceParent: {fileID: 534559996}
-  _planetPrefab: {fileID: 3007426797351871562, guid: 5636b2855da6c0a41bcfd3116a3bbd5f,
+  _planetPrefab: {fileID: 2885617284647628979, guid: 21b31b51962f8314381a053f700f2d61,
     type: 3}
   _cellSize: {x: 1, y: 1}
   _chanceSpawnPlanet: 30
@@ -1093,14 +1094,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 2041740349}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3f3278813259b44b8b6340649ae9663, type: 3}
+  m_Script: {fileID: 11500000, guid: a0766dc7e334a594dbc9e961411e7dab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 264003337}
-  laziness: 10
-  lookAtTarget: 0
-  takeOffsetFromInitialPos: 1
-  generalOffset: {x: 0, y: 0, z: 0}
+  _target: {fileID: 264003337}
+  _moveLaziness: 1
+  _stickingDistance: 0.1
+  _lookAtTarget: 0
+  _takeOffsetFromInitialPos: 1
+  _generalOffset: {x: 0, y: 0, z: 0}
 --- !u!114 &2041740352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1114,7 +1116,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _mainCamera: {fileID: 519420031}
-  _minSizeCameraScale: 4.5
+  _minSizeCameraScale: 5
   _maxSizeCameraScale: 90
   _speedCameraScale: 0.05
 --- !u!1 &2135818014
@@ -1305,81 +1307,33 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
         type: 3}
-      propertyPath: _curveMove.m_Curve.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
-        type: 3}
       propertyPath: _curveMove.m_Curve.Array.data[0].inSlope
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
         type: 3}
       propertyPath: _curveMove.m_Curve.Array.data[0].outSlope
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
         type: 3}
       propertyPath: _curveMove.m_Curve.Array.data[0].tangentMode
-      value: 34
-      objectReference: {fileID: 0}
-    - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
-        type: 3}
-      propertyPath: _curveMove.m_Curve.Array.data[1].time
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
-        type: 3}
-      propertyPath: _curveMove.m_Curve.Array.data[1].value
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
         type: 3}
       propertyPath: _curveMove.m_Curve.Array.data[1].inSlope
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
         type: 3}
       propertyPath: _curveMove.m_Curve.Array.data[1].outSlope
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
         type: 3}
       propertyPath: _curveMove.m_Curve.Array.data[1].tangentMode
-      value: 34
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
-        type: 3}
-      propertyPath: _playerController
-      value: 
-      objectReference: {fileID: 3745356312304695347}
-    - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
-        type: 3}
-      propertyPath: _playerObject
-      value: 
-      objectReference: {fileID: 3745356312304695346}
-    - target: {fileID: 5418194990962829312, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
-        type: 3}
-      propertyPath: _playerTransform
-      value: 
-      objectReference: {fileID: 264003337}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e59e0750bfdbf7f4e8fd8cd1c038c993, type: 3}
---- !u!1 &3745356312304695346 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 343120246835614923, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
-    type: 3}
-  m_PrefabInstance: {fileID: 3745356312304695345}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &3745356312304695347 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7824704476681590708, guid: e59e0750bfdbf7f4e8fd8cd1c038c993,
-    type: 3}
-  m_PrefabInstance: {fileID: 3745356312304695345}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3745356312304695346}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 153a7158e88d9ba49b9b002422d5fe14, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
