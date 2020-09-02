@@ -10,6 +10,8 @@ namespace com.AndryKram.SpaceExplorer
     public class GameController : MonoBehaviour
     {
         #region Fields
+        [SerializeField] private Vector2Int _offsetEndScreenPlayerMove; //количество ячеек до края экрана до которых может добраться игрок
+
         private bool _isStartGame = false;//метка запущенной игры
         #endregion
 
@@ -52,14 +54,20 @@ namespace com.AndryKram.SpaceExplorer
             _isStartGame = true;
             // Активирует игрока
             Player.Instance.ActivatePlayer();
-            //Подписывание обновление игрового пространства на перемещение игрока
-            Player.Instance.OnMovePlayer.AddListener(() => GameSpaceController.Instance.UpdateDisplacementGameSpace());
+            //Перемещение камеры к игроку
+            CameraFolowTarget.Instance.GoToTarget();
             // Генерирует мир по текущей конфигурации
             GameSpaceController.Instance.InitializeGameSpace(GameConfig.Instance.SeedGameSpace);
             // Сменяет состояние интерфейса
             GUIController.Instance.ChangeMenu();
             // Активирует управление масштабированием камеры
             CameraScaler.Instance.ActivateCameraScaler();
+
+            //Подписывание обновление игрового пространства на перемещение игрока
+            Player.Instance.OnMovePlayer.AddListener(GameSpaceController.Instance.UpdateGameSpace);
+            Player.Instance.OnMovePlayer.AddListener(CheckDistanceFromPlayerToEndScreen);
+            CameraScaler.Instance.OnScaleCameraSize.AddListener(GameSpaceController.Instance.UpdateGameSpace);
+            CameraFolowTarget.Instance.OnMoveToTarget.AddListener(GameSpaceController.Instance.UpdateGameSpace);
         }
 
         /// <summary>
@@ -70,12 +78,16 @@ namespace com.AndryKram.SpaceExplorer
             _isStartGame = false;
             /// Сохраняет конфигурацию мира
             GameConfig.Instance.SaveGameConfig(GameSpaceController.Instance.GameSpaceSeed, Player.Instance.PlayerCellPosition);
+
+            //Отписывание обновление игрового пространства от перемещение игрока
+            Player.Instance.OnMovePlayer.RemoveListener(GameSpaceController.Instance.UpdateGameSpace);
+            Player.Instance.OnMovePlayer.RemoveListener(CheckDistanceFromPlayerToEndScreen);
+            CameraScaler.Instance.OnScaleCameraSize.RemoveListener(GameSpaceController.Instance.UpdateGameSpace);
+            CameraFolowTarget.Instance.OnMoveToTarget.RemoveListener(GameSpaceController.Instance.UpdateGameSpace);
             /// Отключает масштабируемость камеры
             CameraScaler.Instance.DeactivateCameraScaler();
             /// Отключает игрока
             Player.Instance.DeactivatePlayer();
-            //Отписывание обновление игрового пространства от перемещение игрока
-            Player.Instance.OnMovePlayer.RemoveListener(() => GameSpaceController.Instance.UpdateDisplacementGameSpace());
             /// Скрывает игровой мир
             GameSpaceController.Instance.HideGameSpace();
             /// Сменяет интерфейс
@@ -99,6 +111,21 @@ namespace com.AndryKram.SpaceExplorer
         {
             //При запущенной игре сохраняет конфигурацию мира
             if(_isStartGame) GameConfig.Instance.SaveGameConfig(GameSpaceController.Instance.GameSpaceSeed, Player.Instance.PlayerCellPosition);
+        }
+
+
+        private void CheckDistanceFromPlayerToEndScreen()
+        {
+            var playerPosition = Player.Instance.PlayerCellPosition;
+            var leftDownScreen = GameSpaceController.Instance.LeftDownScreenPosition;
+            var rightUpScreen = GameSpaceController.Instance.RightUpScreenPosition;
+            if(playerPosition.x >= rightUpScreen.x - _offsetEndScreenPlayerMove.x ||
+                playerPosition.x <= leftDownScreen.x + _offsetEndScreenPlayerMove.x||
+                playerPosition.y >= rightUpScreen.y - _offsetEndScreenPlayerMove.y||
+                playerPosition.y <= leftDownScreen.y +_offsetEndScreenPlayerMove.y)
+            {
+                CameraFolowTarget.Instance.MoveToTarget();
+            }
         }
         #endregion
     }
