@@ -99,6 +99,52 @@ namespace com.AndryKram.SpaceExplorer
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Player"",
+            ""id"": ""0f658738-63c5-4f23-a80c-8437f1760078"",
+            ""actions"": [
+                {
+                    ""name"": ""Touch"",
+                    ""type"": ""Button"",
+                    ""id"": ""a5831cbb-cd57-49ee-88bb-edfb0ccda48f"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
+                    ""name"": ""TouchPosition"",
+                    ""type"": ""Value"",
+                    ""id"": ""3e60e638-4d76-473b-9476-4a229c83bd1b"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""1be87e53-1067-4622-8d45-c262986fc62d"",
+                    ""path"": ""<Pointer>/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Touch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d14d5f62-929d-48f5-aaea-59770715021e"",
+                    ""path"": ""<Pointer>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""TouchPosition"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -109,6 +155,10 @@ namespace com.AndryKram.SpaceExplorer
             m_CameraScaler_TouchTwo = m_CameraScaler.FindAction("TouchTwo", throwIfNotFound: true);
             m_CameraScaler_TouchOnePosition = m_CameraScaler.FindAction("TouchOnePosition", throwIfNotFound: true);
             m_CameraScaler_TouchTwoPosition = m_CameraScaler.FindAction("TouchTwoPosition", throwIfNotFound: true);
+            // Player
+            m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
+            m_Player_Touch = m_Player.FindAction("Touch", throwIfNotFound: true);
+            m_Player_TouchPosition = m_Player.FindAction("TouchPosition", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -211,12 +261,58 @@ namespace com.AndryKram.SpaceExplorer
             }
         }
         public CameraScalerActions @CameraScaler => new CameraScalerActions(this);
+
+        // Player
+        private readonly InputActionMap m_Player;
+        private IPlayerActions m_PlayerActionsCallbackInterface;
+        private readonly InputAction m_Player_Touch;
+        private readonly InputAction m_Player_TouchPosition;
+        public struct PlayerActions
+        {
+            private @SpaceExplorerInputs m_Wrapper;
+            public PlayerActions(@SpaceExplorerInputs wrapper) { m_Wrapper = wrapper; }
+            public InputAction @Touch => m_Wrapper.m_Player_Touch;
+            public InputAction @TouchPosition => m_Wrapper.m_Player_TouchPosition;
+            public InputActionMap Get() { return m_Wrapper.m_Player; }
+            public void Enable() { Get().Enable(); }
+            public void Disable() { Get().Disable(); }
+            public bool enabled => Get().enabled;
+            public static implicit operator InputActionMap(PlayerActions set) { return set.Get(); }
+            public void SetCallbacks(IPlayerActions instance)
+            {
+                if (m_Wrapper.m_PlayerActionsCallbackInterface != null)
+                {
+                    @Touch.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTouch;
+                    @Touch.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTouch;
+                    @Touch.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTouch;
+                    @TouchPosition.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTouchPosition;
+                    @TouchPosition.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTouchPosition;
+                    @TouchPosition.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnTouchPosition;
+                }
+                m_Wrapper.m_PlayerActionsCallbackInterface = instance;
+                if (instance != null)
+                {
+                    @Touch.started += instance.OnTouch;
+                    @Touch.performed += instance.OnTouch;
+                    @Touch.canceled += instance.OnTouch;
+                    @TouchPosition.started += instance.OnTouchPosition;
+                    @TouchPosition.performed += instance.OnTouchPosition;
+                    @TouchPosition.canceled += instance.OnTouchPosition;
+                }
+            }
+        }
+        public PlayerActions @Player => new PlayerActions(this);
         public interface ICameraScalerActions
         {
             void OnTouchOne(InputAction.CallbackContext context);
             void OnTouchTwo(InputAction.CallbackContext context);
             void OnTouchOnePosition(InputAction.CallbackContext context);
             void OnTouchTwoPosition(InputAction.CallbackContext context);
+        }
+        public interface IPlayerActions
+        {
+            void OnTouch(InputAction.CallbackContext context);
+            void OnTouchPosition(InputAction.CallbackContext context);
         }
     }
 }
