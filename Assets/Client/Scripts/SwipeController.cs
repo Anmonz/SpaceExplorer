@@ -48,10 +48,13 @@ namespace com.AndryKram.SpaceExplorer
         {
             _onSwipe.RemoveAllListener();
 
-            _inputActions.Player.Touch.started -= OnStartedTouch;
-            _inputActions.Player.Touch.canceled -= OnCanceledTouch;
+            if (_inputActions != null)
+            {
+                _inputActions.Player.Touch.started -= OnStartedTouch;
+                _inputActions.Player.Touch.canceled -= OnCanceledTouch;
 
-            _inputActions.Dispose();
+                _inputActions.Dispose();
+            }
         }
 
         /// <summary>
@@ -59,7 +62,7 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         private void OnEnable()
         {
-            _inputActions.Enable();
+            if (_inputActions != null) _inputActions.Enable();
         }
 
         /// <summary>
@@ -67,7 +70,7 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         private void OnDisable()
         {
-            _inputActions.Disable();
+            if (_inputActions != null) _inputActions.Disable();
         }
 
         /// <summary>
