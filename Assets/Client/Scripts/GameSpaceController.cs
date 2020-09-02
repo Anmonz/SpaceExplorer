@@ -8,14 +8,9 @@ namespace com.AndryKram.SpaceExplorer
     public class GameSpaceController : MonoSingleton<GameSpaceController>
     {
         #region Fields
-        [Header("View Settings")]
-
-        [Tooltip("Установить объект камеры или игрока")]
-        [SerializeField] private Transform _objectCenterViewPosition = null; //точка центра отображения игрового пространства (Камеру поставить)
-        [Tooltip("Растояние от объекта до края куба области отображения объектов")]
-        [SerializeField] private int _radiusCubeViewSpace = 5; //радиус окружности от центра отображения игрового пространства
-
         [Header("Grid Settings")]
+        [SerializeField] private Vector2Int _offsetProjection = new Vector2Int(5, 5);
+        [SerializeField, Range(0,100)] private int _amountPlanetWithScore = 10;
 
         [Tooltip("Родитель всех созданых объектов")]
         [SerializeField] private Transform _gameSpaceParent = null;//объект родителя для всех созданных объектов
@@ -25,12 +20,13 @@ namespace com.AndryKram.SpaceExplorer
 
         private int _seedGameSpace;//семя игрового поля
 
-        private Dictionary<Vector2Int, GameObject> _planets = new Dictionary<Vector2Int, GameObject>(); //текущие отображенные планеты
-        private Stack<GameObject> _poolPlanets = new Stack<GameObject>();//пул планет
+        private Dictionary<Vector2Int, Planet> _planets = new Dictionary<Vector2Int, Planet>(); //текущие отображенные планеты
+        private Stack<Planet> _poolPlanets = new Stack<Planet>();//пул планет
 
-        private Vector2Int _lastCenterView = Vector2Int.zero;//последняя позиция объекта-центра области отображения
-
-        private int _lastRadiusCubeViewSpace = 0;//при скрытии поля сохраняет последний радиус
+        private Camera _mainCamera = null;//основная камера
+        private float _distanceCameraToGameSpace;//растояние от камеры до поля
+        private Vector2Int _leftDownScreenPoint;// Левая нижняя ячейка поля доступная на экране
+        private Vector2Int _rightUpScreenPoint;// Правая верхняя ячейка поля доступная на экране
         #endregion
 
         #region Properties
@@ -38,6 +34,14 @@ namespace com.AndryKram.SpaceExplorer
         /// Возвращает семя относительно которого создано игровое поле
         /// </summary>
         public int GameSpaceSeed { get => _seedGameSpace; }
+        /// <summary>
+        /// Левая нижняя ячейка поля доступная на экране
+        /// </summary>
+        public Vector2Int LeftDownScreenPosition { get => _leftDownScreenPoint; }
+        /// <summary>
+        /// Правая верхняя ячейка поля доступная на экране
+        /// </summary>
+        public Vector2Int RightUpScreenPosition { get => _rightUpScreenPoint - _offsetProjection; }
         #endregion
 
         #region Public Methods
@@ -46,14 +50,14 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         public void InitializeGameSpace(int seed = 0)
         {
-            if (_lastRadiusCubeViewSpace != 0) _radiusCubeViewSpace = _lastRadiusCubeViewSpace;
-
             //Проверка на поступление нового Seed
             if (seed == 0) _seedGameSpace = (int)System.DateTime.Now.GetHashCode();
             else _seedGameSpace = seed;
 
             //Отображение игрового поля
-            CheckAllCellViewGameSpace();
+            UpdateAllViewprojection();
+
+            ShowTopPlanet(Player.Instance.PlayerCellPosition, _amountPlanetWithScore);
         }
 
         /// <summary>
@@ -61,37 +65,18 @@ namespace com.AndryKram.SpaceExplorer
         /// </summary>
         public void HideGameSpace()
         {
-            _lastRadiusCubeViewSpace = _radiusCubeViewSpace;
-            _radiusCubeViewSpace = 0;
-            CheckAllCellViewGameSpace();
-        }
-
-        /// <summary>
-        ///Обновляет всю область отображения
-        /// </summary>
-        public void UpdateAllGameSpace()
-        {
-            CheckAllCellViewGameSpace();
+            _rightUpScreenPoint = _leftDownScreenPoint;
+            CheckObjectsOffViewProjection();
         }
 
         /// <summary>
         /// Обновляет объекты области отображения при нсмещении
         /// </summary>
-        public void UpdateDisplacementGameSpace()
+        public void UpdateGameSpace()
         {
-            CheckCellDiplacementCenterViewGameSpace();
-        }
+            UpdateAllViewprojection();
 
-        /// <summary>
-        /// Получение ячейки в которую входит позиция
-        /// </summary>
-        /// <param name="position">позиция на проверку</param>
-        /// <returns></returns>
-        public Vector2Int GetCellOnWorld(Vector3 position)
-        {
-            var cellX = (int)System.Math.Floor(position.x / _cellSize.x);
-            var cellY = (int)System.Math.Floor(position.y / _cellSize.y);
-            return new Vector2Int(cellX, cellY);
+            ShowTopPlanet(Player.Instance.PlayerCellPosition, _amountPlanetWithScore);
         }
 
         /// <summary>
@@ -105,104 +90,77 @@ namespace com.AndryKram.SpaceExplorer
             var positionY = cell.y * _cellSize.y + _cellSize.y / 2f;
             return new Vector3(positionX, positionY, 0f);
         }
+
+        public void ShowTopPlanet(Vector2Int cell, int amountTop)
+        {
+            var sortPlanet = _planets.OrderBy(kp => Vector2Int.Distance(kp.Key, cell)).ThenByDescending(kp => kp.Value.PlanetScore);
+
+            foreach(var keyValue in sortPlanet)
+            {
+                if (amountTop > 0)
+                {
+                    keyValue.Value.ShowScore();
+                    amountTop--;
+                }
+                else
+                {
+                    keyValue.Value.HideScore();
+                }
+            }
+        }
         #endregion
 
         #region Private Methods
         /// <summary>
-        /// Проверка ячеек входящих в растояние перемещения центра области отображения
+        /// Обновляет поле зрения
         /// </summary>
-        private void CheckCellDiplacementCenterViewGameSpace()
+        private void UpdateViewProjection()
         {
-            //получение ячейки для позиции объекта центра области отображения
-            var centerCell = GetCellOnWorld(_objectCenterViewPosition.position);
+            if (_mainCamera == null) _mainCamera = Camera.main;
 
-            //вектор смещения относительно старого центра
-            var displacementCenter = centerCell - _lastCenterView;
-
-            //проверка на нулевое смещение
-            if (displacementCenter == Vector2Int.zero) return;
-
-            //вычисление дистанций смещения по осям
-            var offsetX = Mathf.Abs(displacementCenter.x);
-            var offsetY = Mathf.Abs(displacementCenter.y);
-
-            //проверка смещения больше чем радиус куба области отображения
-            if (offsetX >= _radiusCubeViewSpace || offsetY >= _radiusCubeViewSpace)
-            {
-                //выполнение глобальной проверки для области отображения
-                CheckAllCellViewGameSpace();
-                return;
-            }
-
-            //вычисление знака смещения по оси X
-            var signX = (int)Mathf.Sign(displacementCenter.x);
-
-            //проверка ячеек попавших в смещение по оси X
-            for (int x = (_radiusCubeViewSpace - offsetX);  x <= _radiusCubeViewSpace; x++)
-            {
-                for (int i = -(_radiusCubeViewSpace); i < (_radiusCubeViewSpace); i++)
-                {
-                    var currentCell = centerCell + new Vector2Int(x * signX, i);
-                    CheckPlanetInCell(ref currentCell);
-                }
-            }
-
-            //вычисление знака смещения по оси Y
-            var signY = (int)Mathf.Sign(displacementCenter.y);
-
-            //проверка ячеек попавших в смещение по оси Y
-            for (int y = (_radiusCubeViewSpace - offsetY); y <= _radiusCubeViewSpace; y++)
-            {
-                for (int i = -(_radiusCubeViewSpace); i < (_radiusCubeViewSpace); i++)
-                {
-                    var currentCell = centerCell + new Vector2Int(i, y * signY);
-                    CheckPlanetInCell(ref currentCell);
-                }
-            }
-
-            //сохранение центра
-            _lastCenterView = centerCell;
-
-            //проверка объектов вне поля отображения
-            CheckPlanetsOffViewSpace();
+            _distanceCameraToGameSpace = Vector3.Distance(_mainCamera.transform.position, _gameSpaceParent.position);
+            _leftDownScreenPoint = GetCellOnWorld(_mainCamera.ScreenToWorldPoint(new Vector3(0f,0f, _distanceCameraToGameSpace)));
+            _rightUpScreenPoint = GetCellOnWorld(_mainCamera.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, _distanceCameraToGameSpace))) + _offsetProjection;
         }
 
         /// <summary>
-        /// Проверяет все ячейки входящие в область отображения
+        /// Проверяет ячеки внутри поля зрения
         /// </summary>
-        private void CheckAllCellViewGameSpace()
+        private void UpdateAllViewprojection()
         {
-            //получение ячейки для позиции объекта центра области отображения
-            var centerCell = GetCellOnWorld(_objectCenterViewPosition.position);
+            UpdateViewProjection();
 
-            //проверка всех ячеек по радиусу куба
-            for (int r = 0; r <= _radiusCubeViewSpace; r++)
+            var currentCell = _leftDownScreenPoint;
+
+            for(int x = _leftDownScreenPoint.x; x <= _rightUpScreenPoint.x; x++)
             {
-                for (int i = -r; i < r; i++)
+                for (int y = _leftDownScreenPoint.y; y <= _rightUpScreenPoint.y; y++)
                 {
-                    //нижняя грань
-                    var currentCell = centerCell + new Vector2Int(i, -r);
-                    CheckPlanetInCell(ref currentCell);
-
-                    //правая грань
-                    currentCell = centerCell + new Vector2Int(r, i);
-                    CheckPlanetInCell(ref currentCell);
-
-                    //верхняя грань
-                    currentCell = centerCell + new Vector2Int(-i, r);
-                    CheckPlanetInCell(ref currentCell);
-
-                    //левая грань
-                    currentCell = centerCell + new Vector2Int(-r, -i);
+                    currentCell = new Vector2Int(x, y);
                     CheckPlanetInCell(ref currentCell);
                 }
             }
 
-            //сохранение центра
-            _lastCenterView = centerCell;
-
             //проверка объектов вне поля отображения
-            CheckPlanetsOffViewSpace();
+            CheckObjectsOffViewProjection();
+        }
+
+        /// <summary>
+        /// Проверяет и скрывает планеты вне поля зрения
+        /// </summary>
+        private void CheckObjectsOffViewProjection()
+        {
+            //получение списка ключей выходящих за поле зрения
+            var result = _planets.Keys.Where(k => (k.x < _leftDownScreenPoint.x || k.x > _rightUpScreenPoint.x || k.y < _leftDownScreenPoint.y || k.y > _rightUpScreenPoint.y)).ToList();
+
+            //Скрытие и перенос в пул полученных объектов
+            foreach (Vector2Int cell in result)
+            {
+                var planet = _planets[cell];
+                planet.HidePlanet();
+                _poolPlanets.Push(planet);
+                _planets.Remove(cell);
+            }
         }
 
         /// <summary>
@@ -221,8 +179,7 @@ namespace com.AndryKram.SpaceExplorer
                     //Получение планеты и установка в ячейкку
                     var objectPlanet = GetPlanet();
 
-                    objectPlanet.transform.position = GetCenterCell(cell);
-                    objectPlanet.SetActive(true);
+                    objectPlanet.InitializePlanet(GetSeedCell(ref cell), GetCenterCell(cell));
 
                     //добавление новой ячейки с планетой
                     _planets.Add(cell, objectPlanet);
@@ -255,13 +212,13 @@ namespace com.AndryKram.SpaceExplorer
         /// или создание нового экземпляра
         /// </summary>
         /// <returns>Экземпляр GameObject префаба планеты</returns>
-        private GameObject GetPlanet()
+        private Planet GetPlanet()
         {
             //проверка на опустошение пула
             if (_poolPlanets.Count == 0)
             {
                 //создание новой планеты
-                var objectPlanet = GameObject.Instantiate(_planetPrefab, _gameSpaceParent);
+                var objectPlanet = GameObject.Instantiate(_planetPrefab, _gameSpaceParent).GetComponent<Planet>();
 
                 //возвращение новой планеты
                 return objectPlanet;
@@ -272,36 +229,17 @@ namespace com.AndryKram.SpaceExplorer
         }
 
         /// <summary>
-        /// Скрывает планеты вне поля отображения объектов
+        /// Получение ячейки в которую входит позиция
         /// </summary>
-        private void CheckPlanetsOffViewSpace()
+        /// <param name="position">позиция на проверку</param>
+        /// <returns></returns>
+        private Vector2Int GetCellOnWorld(Vector3 position)
         {
-            //вычисление крайних углов диагонали
-            var leftDown = _lastCenterView + new Vector2Int(-1, -1) * (int)_radiusCubeViewSpace;
-            var rightUp = _lastCenterView + new Vector2Int(1, 1) * (int)_radiusCubeViewSpace;
-
-            //получение списка ключей выходящих за поле зрения
-            var result = _planets.Keys.Where(k => (k.x < leftDown.x || k.x > rightUp.x || k.y < leftDown.y || k.y > rightUp.y) ).ToList();
-
-            //Скрытие и перенос в пул полученных объектов
-            foreach(Vector2Int cell in result)
-            {
-                var planet = _planets[cell];
-                planet.SetActive(false);
-                _poolPlanets.Push(planet);
-                _planets.Remove(cell);
-            }
+            var cellX = (int)System.Math.Floor(position.x / _cellSize.x);
+            var cellY = (int)System.Math.Floor(position.y / _cellSize.y);
+            return new Vector2Int(cellX, cellY);
         }
+
         #endregion
-
-#if UNITY_EDITOR
-        /// <summary>
-        /// Отображает в редакторе размер поля отображения объектов
-        /// </summary>
-        private void OnDrawGizmosSelected()
-        {
-            Gizmos.DrawWireCube(_objectCenterViewPosition.position, _cellSize * _radiusCubeViewSpace * 2f);
-        }
-#endif
     }
 }
