@@ -18,6 +18,9 @@ namespace com.AndryKram.SpaceExplorer
         private const string PLAYER_POSITION_X_KEY = "PlayerPositionX";//ключ позиции игрока по X
         private const string PLAYER_POSITION_Y_KEY = "PlayerPositionY";//ключ позиции игрока по Y
         private Vector2Int _playerPosition = Vector2Int.zero;//позиция игрока
+
+        private const string RESOURCES_PATH_SPRITES_PLANETS = "Sprites/Planets";
+        private List<Sprite> _planetsSprites = null;
         #endregion
 
         #region Properties
@@ -29,6 +32,10 @@ namespace com.AndryKram.SpaceExplorer
         /// Позиция игрока
         /// </summary>
         public Vector2Int PlayerPosition { get => _playerPosition; }
+        /// <summary>
+        /// Различные картинки планет
+        /// </summary>
+        public List<Sprite> PlanetsSprites { get => _planetsSprites; }
         #endregion
 
         #region Public Methods
@@ -75,6 +82,14 @@ namespace com.AndryKram.SpaceExplorer
         #endregion
 
         #region Private Methods
+        /// <summary>
+        /// Загружает спрайты планет из ресурсов
+        /// </summary>
+        private void Start()
+        {
+            _planetsSprites = new List<Sprite>(Resources.LoadAll<Sprite>(RESOURCES_PATH_SPRITES_PLANETS));
+        }
+
         /// <summary>
         /// Выполненяе загрузку сохраненных данных
         /// </summary>
