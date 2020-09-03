@@ -39,6 +39,7 @@ namespace com.AndryKram.SpaceExplorer
         {
             _whereCameraShouldBe = _target.position + _generalOffset;
             _cameraTransform.position = _whereCameraShouldBe;
+            _onMoveToTarget.Invoke();
         }
 
         /// <summary>
