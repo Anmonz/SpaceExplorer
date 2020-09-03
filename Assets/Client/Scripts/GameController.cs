@@ -122,9 +122,9 @@ namespace com.AndryKram.SpaceExplorer
             if(playerPosition.x >= rightUpScreen.x - _offsetEndScreenPlayerMove.x ||
                 playerPosition.x <= leftDownScreen.x + _offsetEndScreenPlayerMove.x||
                 playerPosition.y >= rightUpScreen.y - _offsetEndScreenPlayerMove.y||
-                playerPosition.y <= leftDownScreen.y +_offsetEndScreenPlayerMove.y)
+                playerPosition.y <= leftDownScreen.y + _offsetEndScreenPlayerMove.y)
             {
-                CameraFolowTarget.Instance.MoveToTarget();
+                CameraFolowTarget.Instance.GoToTarget();
             }
         }
         #endregion
