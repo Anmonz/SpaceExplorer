@@ -37,7 +37,7 @@ namespace com.AndryKram.SpaceExplorer
         /// <summary>
         /// Левая нижняя ячейка поля доступная на экране
         /// </summary>
-        public Vector2Int LeftDownScreenPosition { get => _leftDownScreenPoint; }
+        public Vector2Int LeftDownScreenPosition { get => _leftDownScreenPoint + _offsetProjection; }
         /// <summary>
         /// Правая верхняя ячейка поля доступная на экране
         /// </summary>
@@ -119,7 +119,7 @@ namespace com.AndryKram.SpaceExplorer
             if (_mainCamera == null) _mainCamera = Camera.main;
 
             _distanceCameraToGameSpace = Vector3.Distance(_mainCamera.transform.position, _gameSpaceParent.position);
-            _leftDownScreenPoint = GetCellOnWorld(_mainCamera.ScreenToWorldPoint(new Vector3(0f,0f, _distanceCameraToGameSpace)));
+            _leftDownScreenPoint = GetCellOnWorld(_mainCamera.ScreenToWorldPoint(new Vector3(0f,0f, _distanceCameraToGameSpace))) - _offsetProjection;
             _rightUpScreenPoint = GetCellOnWorld(_mainCamera.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, _distanceCameraToGameSpace))) + _offsetProjection;
         }
 
