@@ -18,6 +18,7 @@ namespace com.AndryKram.SpaceExplorer
 
         private float _currentSwipeValue = 0;//значение прохождения растояния для свайпа
         private Vector2 _swipeDirection = Vector2.zero;//направление свайпа
+        private Coroutine _swipeCoroutine = null;//корутина свайпа
 
         private ActionEvent<Vector2> _onSwipe = new ActionEvent<Vector2>();//событие свайпа
         #endregion
@@ -37,8 +38,9 @@ namespace com.AndryKram.SpaceExplorer
         {
             _inputActions = new SpaceExplorerInputs();
 
-            _inputActions.Player.Touch.started += OnStartedTouch;
-            _inputActions.Player.Touch.canceled += OnCanceledTouch;
+            _inputActions.Gameplay.TouchOne.started += OnStartedTouch;
+            _inputActions.Gameplay.TouchOne.canceled += OnCanceledTouch;
+            _inputActions.Gameplay.TouchTwo.started += OnStartedTouch;
         }
 
         /// <summary>
@@ -50,8 +52,9 @@ namespace com.AndryKram.SpaceExplorer
 
             if (_inputActions != null)
             {
-                _inputActions.Player.Touch.started -= OnStartedTouch;
-                _inputActions.Player.Touch.canceled -= OnCanceledTouch;
+                _inputActions.Gameplay.TouchOne.started -= OnStartedTouch;
+                _inputActions.Gameplay.TouchOne.canceled -= OnCanceledTouch;
+                _inputActions.Gameplay.TouchTwo.started -= OnCanceledTouch;
 
                 _inputActions.Dispose();
             }
@@ -79,9 +82,19 @@ namespace com.AndryKram.SpaceExplorer
         /// <param name="context"></param>
         private void OnStartedTouch(InputAction.CallbackContext context)
         {
-            _isTouch = true;
-            //запускает корутину отслеживания свайпа
-            StartCoroutine(Swipe());
+            if (!_isTouch)
+            {
+                _isTouch = true;
+                //запускает корутину отслеживания свайпа
+                _swipeCoroutine = StartCoroutine(Swipe());
+            }
+            else if (_swipeCoroutine != null)
+            {
+                StopCoroutine(_swipeCoroutine);
+                //сброс текущего значения проходжения рстрояния свайпа
+                _currentSwipeValue = 0;
+                _swipeCoroutine = null;
+            }
         }
 
         /// <summary>
@@ -90,16 +103,19 @@ namespace com.AndryKram.SpaceExplorer
         /// <param name="context"></param>
         private void OnCanceledTouch(InputAction.CallbackContext context)
         {
-            _isTouch = false;
-
-            //При прохождении растояния свайпа
-            if(_currentSwipeValue >= 1)
+            if (_isTouch)
             {
-                //вызов события свайпа
-                _onSwipe.Invoke(_swipeDirection);
+                _isTouch = false;
 
-                //сброс текущего значения проходжения рстрояния свайпа
-                _currentSwipeValue = 0;
+                //При прохождении растояния свайпа
+                if (_currentSwipeValue >= 1)
+                {
+                    //вызов события свайпа
+                    _onSwipe.Invoke(_swipeDirection);
+
+                    //сброс текущего значения проходжения рстрояния свайпа
+                    _currentSwipeValue = 0;
+                }
             }
         }
         #endregion
@@ -112,12 +128,12 @@ namespace com.AndryKram.SpaceExplorer
         private IEnumerator Swipe()
         {
             //начальная позиция
-            var startTouchPosition = _inputActions.Player.TouchPosition.ReadValue<Vector2>();
+            var startTouchPosition = _inputActions.Gameplay.TouchOnePosition.ReadValue<Vector2>();
 
             while (_isTouch)
             {
                 //текущая позиция
-                var currentTouchPosition = _inputActions.Player.TouchPosition.ReadValue<Vector2>();
+                var currentTouchPosition = _inputActions.Gameplay.TouchOnePosition.ReadValue<Vector2>();
                 //направление передвижения
                 _swipeDirection = currentTouchPosition - startTouchPosition;
                 //значение пройденного растояния
