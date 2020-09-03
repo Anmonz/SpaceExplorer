@@ -9,6 +9,7 @@ namespace com.AndryKram.SpaceExplorer
     {
         #region Fields
         [SerializeField] private Text _scoreText = null;
+        [SerializeField] private SpriteRenderer _planetSprite = null;
 
         private GameObject _planetGameObject = null;
         private Transform _planetTransform = null;
@@ -43,6 +44,12 @@ namespace com.AndryKram.SpaceExplorer
             PlanetScore = UnityEngine.Random.Range(0, 10000);
             _scoreText.text = PlanetScore.ToString();
             _scoreText.enabled = false;
+
+            var countPlanetsSprites = GameConfig.Instance.PlanetsSprites.Count;
+            if (countPlanetsSprites > 0)
+            {
+                _planetSprite.sprite = GameConfig.Instance.PlanetsSprites[UnityEngine.Random.Range(0, countPlanetsSprites)];
+            }
         }
 
         /// <summary>
