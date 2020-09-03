@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _scoreText: {fileID: 3522457057988930078}
+  _planetSprite: {fileID: 8068436001695794378}
 --- !u!1 &5098447975397675698
 GameObject:
   m_ObjectHideFlags: 0
