@@ -53,11 +53,11 @@ namespace com.AndryKram.SpaceExplorer
         {
             _isActivated = true;
 
-            _inputActions.CameraScaler.TouchOne.started += OnStartedTouch;
-            _inputActions.CameraScaler.TouchOne.canceled += OnCanceledTouch;
+            _inputActions.Gameplay.TouchOne.started += OnStartedTouch;
+            _inputActions.Gameplay.TouchOne.canceled += OnCanceledTouch;
 
-            _inputActions.CameraScaler.TouchTwo.started += OnStartedTouch;
-            _inputActions.CameraScaler.TouchTwo.canceled += OnCanceledTouch;
+            _inputActions.Gameplay.TouchTwo.started += OnStartedTouch;
+            _inputActions.Gameplay.TouchTwo.canceled += OnCanceledTouch;
 
             _inputActions.Enable();
             
@@ -73,11 +73,11 @@ namespace com.AndryKram.SpaceExplorer
 
             _inputActions.Disable();
 
-            _inputActions.CameraScaler.TouchOne.started -= OnStartedTouch;
-            _inputActions.CameraScaler.TouchOne.canceled -= OnCanceledTouch;
+            _inputActions.Gameplay.TouchOne.started -= OnStartedTouch;
+            _inputActions.Gameplay.TouchOne.canceled -= OnCanceledTouch;
 
-            _inputActions.CameraScaler.TouchTwo.started -= OnStartedTouch;
-            _inputActions.CameraScaler.TouchTwo.canceled -= OnCanceledTouch;
+            _inputActions.Gameplay.TouchTwo.started -= OnStartedTouch;
+            _inputActions.Gameplay.TouchTwo.canceled -= OnCanceledTouch;
         }
         #endregion
 
@@ -98,11 +98,11 @@ namespace com.AndryKram.SpaceExplorer
         {
             if (_isActivated && _inputActions != null)
             {
-                _inputActions.CameraScaler.TouchOne.started -= OnStartedTouch;
-                _inputActions.CameraScaler.TouchOne.canceled -= OnCanceledTouch;
+                _inputActions.Gameplay.TouchOne.started -= OnStartedTouch;
+                _inputActions.Gameplay.TouchOne.canceled -= OnCanceledTouch;
 
-                _inputActions.CameraScaler.TouchTwo.started -= OnStartedTouch;
-                _inputActions.CameraScaler.TouchTwo.canceled -= OnCanceledTouch;
+                _inputActions.Gameplay.TouchTwo.started -= OnStartedTouch;
+                _inputActions.Gameplay.TouchTwo.canceled -= OnCanceledTouch;
                 //освобождение экземпляра
                 _inputActions.Dispose();
             }
@@ -140,8 +140,8 @@ namespace com.AndryKram.SpaceExplorer
             }
 
             //Устанавливает начальное положение 
-            _lastPositionTouchOne = _inputActions.CameraScaler.TouchOnePosition.ReadValue<Vector2>();
-            _lastPositionTouchTwo = _inputActions.CameraScaler.TouchTwoPosition.ReadValue<Vector2>();
+            _lastPositionTouchOne = _inputActions.Gameplay.TouchOnePosition.ReadValue<Vector2>();
+            _lastPositionTouchTwo = _inputActions.Gameplay.TouchTwoPosition.ReadValue<Vector2>();
             _lastDistanceTouch = Vector2.Distance(_lastPositionTouchOne, _lastPositionTouchTwo);
 
             //Запускает корутину изменения размера камеры
@@ -208,8 +208,8 @@ namespace com.AndryKram.SpaceExplorer
             while (_isTouchOne)
             {
                 //вычисление текущих позиций касаний
-                var currentTouchOne = _inputActions.CameraScaler.TouchOnePosition.ReadValue<Vector2>();
-                var currentTouchTwo = _inputActions.CameraScaler.TouchTwoPosition.ReadValue<Vector2>();
+                var currentTouchOne = _inputActions.Gameplay.TouchOnePosition.ReadValue<Vector2>();
+                var currentTouchTwo = _inputActions.Gameplay.TouchTwoPosition.ReadValue<Vector2>();
                 var currentDistanceTouch = Vector2.Distance(currentTouchOne, currentTouchTwo);
                 
                 if((_lastDistanceTouch - currentDistanceTouch) == 0) yield return new WaitForFixedUpdate();

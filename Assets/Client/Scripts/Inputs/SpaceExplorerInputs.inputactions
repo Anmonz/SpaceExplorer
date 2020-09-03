@@ -2,7 +2,7 @@
     "name": "SpaceExplorerInputs",
     "maps": [
         {
-            "name": "CameraScaler",
+            "name": "Gameplay",
             "id": "f05406fb-1ac4-4e54-939a-32e3c4758e64",
             "actions": [
                 {
@@ -80,52 +80,6 @@
                     "processors": "",
                     "groups": "",
                     "action": "TouchTwoPosition",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                }
-            ]
-        },
-        {
-            "name": "Player",
-            "id": "0f658738-63c5-4f23-a80c-8437f1760078",
-            "actions": [
-                {
-                    "name": "Touch",
-                    "type": "Button",
-                    "id": "a5831cbb-cd57-49ee-88bb-edfb0ccda48f",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": ""
-                },
-                {
-                    "name": "TouchPosition",
-                    "type": "Value",
-                    "id": "3e60e638-4d76-473b-9476-4a229c83bd1b",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": ""
-                }
-            ],
-            "bindings": [
-                {
-                    "name": "",
-                    "id": "1be87e53-1067-4622-8d45-c262986fc62d",
-                    "path": "<Pointer>/press",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Touch",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "d14d5f62-929d-48f5-aaea-59770715021e",
-                    "path": "<Pointer>/position",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "TouchPosition",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
